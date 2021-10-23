@@ -14,27 +14,20 @@ async function main() {
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
   // constructor args
-  const supply = ethers.utils.parseUnits("10000000", "ether");
-  const name = "Alt Token"
-  const name2 = "Alt Token2"
-  const symbol = "ALT"
-
-
 
 
   // We get the contract to deploy
-  const MockToken = await ethers.getContractFactory("MockERC20");
+  const CobToken = await ethers.getContractFactory("CobToken");
 
-  const mockToken = await MockToken.deploy(name, symbol, supply);
-  const mockToken2 = await MockToken.deploy(name2, symbol, supply);
+  const cobToken = await CobToken.deploy();
+  
 
-  const mock1 = await mockToken.deployed();
-  const mock2 = await mockToken2.deployed()
+  const cob = await cobToken.deployed();
+
 
   console.log(`
-    Mock Token 1 deployed at ${mock1.address}
+    Cob Token deployed at ${cob.address}
 
-    Mock Token 2 deployed at ${mock2.address}
   `);
 }
 
@@ -49,6 +42,3 @@ main()
 
 
 
-///0xd79E2Ec72aFeaB56171f3e6d4a1879d8b955a384 - Farm token
-// 0x7DBaFf79d13A0c842777742A86aE3aCAc9817250 - alt1
-// 0xCCd1660797fe05dAe3439568aD39D2a4DacEab0e - alt2

@@ -65,10 +65,11 @@ const gasPrice = async () => {
     return gasGwei
 };
 
-const quote = async (tokenIn, tokenOut) => {
-    const Routers = await loadRouter();
-    const routerRead = Routers[0];
+const fetchQuote = async (tokenIn, tokenOut) => {
+    const Router = await loadRouter();
+    const routerRead = Router[0];
     const dev = signers[0];
+    const quoteToken = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" //usdc
 
     const path = [tokenIn, tokenOut];
     const amountIn = ethers.utils.parseUnits("1.0", 18);
@@ -122,42 +123,40 @@ const fetchQuotes = async () => {
     return data;
 }
 
-const main = async () => {
-    try {
-        const grass = await gasPrice();
-        const accountInfo = await loadRouter();
-        //const quotes = await fetchQuotes();
-        const price = await quote(tokens.DINO, quoteToken);
+// const main = async () => {
+//     try {
+//         const grass = await gasPrice();
+//         const accountInfo = await loadRouter();
+//         //const quotes = await fetchQuotes();
+//         // const price = await fetchquote(tokens.DINO, quoteToken);
 
         
-        console.log(
-            `
-            +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+
-            Welcome ${accountInfo[0].address}
+//         console.log(
+//             `
+//             +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+
+//             Welcome ${accountInfo[0].address}
 
-            Current Gas Price: ${grass}
-            Token: ${tokens.DINO}
-            Price in USD: ${price}
-            Another Price: ${price}
+//             Current Gas Price: ${grass}
+//             Token: ${tokens.DINO}
+//             Price in USD: ${price}
+//             Another Price: ${price}
 
-            _+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_
-            `
-        );
+//             _+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_
+//             `
+//         );
      
-    } catch (error) {
-        console.log(error)
-    };
+//     } catch (error) {
+//         console.log(error)
+//     };
 
     
-    return;
-};
-//return Routers;
+//     return;
+// };
+// //return Routers;
 
-provider.on('block', async () => {
-    main();
-})
-
-
+// provider.on('block', async () => {
+//     main();
+// })
 
 
 
@@ -167,3 +166,8 @@ provider.on('block', async () => {
 
 
 
+
+
+exports.loadRouter = loadRouter;
+exports.fetchQuote = fetchQuote;
+exports.tokens = tokens;
