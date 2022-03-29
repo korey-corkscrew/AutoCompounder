@@ -21,9 +21,9 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     maticMainnet: {
-      url: "https://rpc-mainnet.maticvigil.com/v1/4b331c188697971af1cd6f05bb7065bc358b7e89",
+      url: "https://polygon-mainnet.g.alchemy.com/v2/p2YbSPZPtrU2ZpuOq7udR4sXMERMgV3r",
       accounts: [process.env.PRIVATE_KEY],
-      gasPrice: 40000000000
+      gasPrice: 90000000000
     },
   }
 };

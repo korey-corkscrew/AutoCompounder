@@ -5,6 +5,7 @@
 // Runtime Environment's members available in the global scope.
 const { BigNumber } = require("ethers");
 const hre = require("hardhat");
+const { addresses } = require("../addresses");
 const ethers = hre.ethers;
 
 async function main() {
@@ -17,13 +18,21 @@ async function main() {
 
 
   // We get the contract to deploy
-  const MultiCallFactory = await ethers.getContractFactory("Multicall");
-  const multicall = await MultiCallFactory.deploy();
+  const CobToken = await ethers.getContractFactory("CobToken");
 
-  await multicall.deployed();
+  const gnosisSafe = addresses.cornTreasury;
 
-  console.log("MultiCall deployed to:", multicall.address);
+  const cobToken = await CobToken.deploy(gnosisSafe);
+  
+  const cob = await cobToken.deployed();
+
+
+  console.log(`
+    Test Cob Token deployed at ${cob.address}
+  `);
 }
+
+
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
@@ -35,4 +44,4 @@ main()
   });
 
 
-//0x34bf52c5Ce4015eE298BB6D1E77CC017537FdE39 - First MultiCall
+

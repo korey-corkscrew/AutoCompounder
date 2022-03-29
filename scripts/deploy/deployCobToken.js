@@ -5,6 +5,7 @@
 // Runtime Environment's members available in the global scope.
 const { BigNumber } = require("ethers");
 const hre = require("hardhat");
+const { addresses } = require("../addresses");
 const ethers = hre.ethers;
 
 async function main() {
@@ -19,15 +20,15 @@ async function main() {
   // We get the contract to deploy
   const CobToken = await ethers.getContractFactory("CobToken");
 
-  const cobToken = await CobToken.deploy();
-  
+  const gnosisSafe = addresses.gnosisSafe;
 
+  const cobToken = await CobToken.deploy(gnosisSafe);
+  
   const cob = await cobToken.deployed();
 
 
   console.log(`
     Cob Token deployed at ${cob.address}
-
   `);
 }
 

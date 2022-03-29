@@ -1,5 +1,21 @@
 // SPDX-License-Identifier: MIT
 
+//                                                 ______   __                                                   
+//                                                /      \ /  |                                                  
+//   _______   ______    ______   _______        /$$$$$$  |$$/  _______    ______   _______    _______   ______  
+//  /       | /      \  /      \ /       \       $$ |_ $$/ /  |/       \  /      \ /       \  /       | /      \ 
+// /$$$$$$$/ /$$$$$$  |/$$$$$$  |$$$$$$$  |      $$   |    $$ |$$$$$$$  | $$$$$$  |$$$$$$$  |/$$$$$$$/ /$$$$$$  |
+// $$ |      $$ |  $$ |$$ |  $$/ $$ |  $$ |      $$$$/     $$ |$$ |  $$ | /    $$ |$$ |  $$ |$$ |      $$    $$ |
+// $$ \_____ $$ \__$$ |$$ |      $$ |  $$ |      $$ |      $$ |$$ |  $$ |/$$$$$$$ |$$ |  $$ |$$ \_____ $$$$$$$$/ 
+// $$       |$$    $$/ $$ |      $$ |  $$ |      $$ |      $$ |$$ |  $$ |$$    $$ |$$ |  $$ |$$       |$$       |
+//  $$$$$$$/  $$$$$$/  $$/       $$/   $$/       $$/       $$/ $$/   $$/  $$$$$$$/ $$/   $$/  $$$$$$$/  $$$$$$$/
+//                         .-.
+//         .-""`""-.    |(@ @)
+//      _/`oOoOoOoOo`\_ \ \-/
+//     '.-=-=-=-=-=-=-.' \/ \
+//       `-=.=-.-=.=-'    \ /\
+//          ^  ^  ^       _H_ \
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -56,6 +72,8 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     uint256 public constant BONUS_MULTIPLIER = 1;
     // Deposit Fee address
     address public feeAddress;
+    // Fee Basis Points
+    uint256 public feeBasisPoints = 10000;
 
     // Info of each pool.
     PoolInfo[] public poolInfo;
@@ -99,7 +117,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
 
     // Add a new lp to the pool. Can only be called by the owner.
     function add(uint256 _allocPoint, IERC20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner nonDuplicated(_lpToken) {
-        require(_depositFeeBP <= 10000, "add: invalid deposit fee basis points");
+        require(_depositFeeBP <= feeBasisPoints, "add: invalid deposit fee basis points");
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -117,7 +135,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
 
     // Update the given pool's cob allocation point and deposit fee. Can only be called by the owner.
     function set(uint256 _pid, uint256 _allocPoint, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
-        require(_depositFeeBP <= 10000, "set: invalid deposit fee basis points");
+        require(_depositFeeBP <= feeBasisPoints, "set: invalid deposit fee basis points");
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -166,7 +184,6 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         }
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
         uint256 cobReward = multiplier.mul(cobPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-        cob.mint(devaddr, cobReward.div(10));
         cob.mint(address(this), cobReward);
         pool.accCobPerShare = pool.accCobPerShare.add(cobReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
@@ -186,7 +203,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         if (_amount > 0) {
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
             if (pool.depositFeeBP > 0) {
-                uint256 depositFee = _amount.mul(pool.depositFeeBP).div(10000);
+                uint256 depositFee = _amount.mul(pool.depositFeeBP).div(feeBasisPoints);
                 pool.lpToken.safeTransfer(feeAddress, depositFee);
                 user.amount = user.amount.add(_amount).sub(depositFee);
             } else {

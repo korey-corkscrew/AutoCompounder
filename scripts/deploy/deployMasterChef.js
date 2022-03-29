@@ -5,6 +5,7 @@
 // Runtime Environment's members available in the global scope.
 const { BigNumber } = require("ethers");
 const hre = require("hardhat");
+const { addresses } = require("../addresses");
 const ethers = hre.ethers;
 
 async function main() {
@@ -19,25 +20,25 @@ async function main() {
   // manually to make sure everything is compiled
   // constructor args
   
-  const cob = "0x793AcF39c3d605d3aD042Ae01fd290a6fE489164"
+  const cobAddress = addresses.trueTestCob
   const provider = new ethers.providers.JsonRpcProvider("https://rpc-mainnet.maticvigil.com/v1/4b331c188697971af1cd6f05bb7065bc358b7e89");
   const account = new ethers.Wallet(process.env.PRIVATE_KEY);
   const signer = account.connect(provider);
   const devaddress = signer.address;
-  const feeaddress = signer.address;
-  const eggPerBlock = ethers.utils.parseUnits("2", "ether");
+  const feeaddress = addresses.cornTreasury;
+  const cobPerBlock = ethers.utils.parseUnits("2.24", "ether");
   const startblock = BigNumber.from(20285829);
 
 
   // We get the contract to deploy
   const MasterChefV2 = await ethers.getContractFactory("MasterChefV2");
-  const masterchef = await MasterChefV2.deploy(cob, devaddress, feeaddress, eggPerBlock, startblock);
+  const masterchef = await MasterChefV2.deploy(cobAddress, devaddress, feeaddress, cobPerBlock, startblock);
 
   await masterchef.deployed();
 
   console.log("Master Chief 117 deployed to:", masterchef.address);
   const CobToken = await ethers.getContractFactory("CobToken");
-  const cobContract = CobToken.attach(cob);
+  const cobContract = CobToken.attach(cobAddress);
   await cobContract.transferOwnership(masterchef.address);
 
   console.log("Transferred ownership of Cob to MasterChief for minting & staking rewards")
@@ -57,7 +58,7 @@ main()
   });
 
 
-// 0xc9B2b713242c7Fc144ee7AC3b4D6f329EdbD3cba - MasterChef
-///0xd79E2Ec72aFeaB56171f3e6d4a1879d8b955a384 - Farm token
+// 0xC71EbC899BCC111F39B2715B5d2D397E671B5bd2 - MasterChef
+///0x793AcF39c3d605d3aD042Ae01fd290a6fE489164 - Farm token
 // 0x7DBaFf79d13A0c842777742A86aE3aCAc9817250 - alt1
 // 0xCCd1660797fe05dAe3439568aD39D2a4DacEab0e - alt2

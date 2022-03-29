@@ -1,71 +1,46 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-pragma experimental ABIEncoderV2;
 
-interface IERC20 {
-    event Approval(address indexed owner, address indexed spender, uint value);
-    event Transfer(address indexed from, address indexed to, uint value);
+/// @title Multicall - Aggregate results from multiple read-only function calls
+/// @author Michael Elliot <mike@makerdao.com>
+/// @author Joshua Levine <joshua@makerdao.com>
+/// @author Nick Johnson <arachnid@notdot.net>
 
-    function name() external view returns (string memory);
-    function symbol() external view returns (string memory);
-    function decimals() external view returns (uint8);
-    function totalSupply() external view returns (uint);
-    function balanceOf(address owner) external view returns (uint);
-    function allowance(address owner, address spender) external view returns (uint);
-
-    function approve(address spender, uint value) external returns (bool);
-    function transfer(address to, uint value) external returns (bool);
-    function transferFrom(address from, address to, uint value) external returns (bool);
-}
-
-interface IWETH is IERC20 {
-    function deposit() external payable;
-    function withdraw(uint) external;
-}
-
-// This contract simply calls multiple targets sequentially, ensuring WETH balance before and after
-
-contract MultiCall {
-    address private immutable owner;
-  
-    IWETH private constant WETH = IWETH(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270);
-
-
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
+contract Multicall {
+    struct Call {
+        address target;
+        bytes callData;
     }
-
-    constructor() public payable {
-        owner = msg.sender;
-    }
-
-    receive() external payable {
-    }
-
-    function uniswapWeth(uint256 _wethAmountToFirstMarket, address[] memory _targets, bytes[] memory _payloads) external onlyOwner payable {
-        require (_targets.length == _payloads.length);
-        uint256 _wethBalanceBefore = WETH.balanceOf(address(this));
-        WETH.transfer(_targets[0], _wethAmountToFirstMarket);
-
-        for (uint256 i = 0; i < _targets.length; i++) {
-            (bool _success, bytes memory _response) = _targets[i].call(_payloads[i]);
-            require(_success); _response;
+    function aggregate(Call[] memory calls) public returns (uint256 blockNumber, bytes[] memory returnData) {
+        blockNumber = block.number;
+        returnData = new bytes[](calls.length);
+        for(uint256 i = 0; i < calls.length; i++) {
+            (bool success, bytes memory ret) = calls[i].target.call(calls[i].callData);
+            require(success);
+            returnData[i] = ret;
         }
-
-        uint256 _wethBalanceAfter = WETH.balanceOf(address(this));
-        require(_wethBalanceAfter > _wethBalanceBefore);
- 
-
-
-   
     }
-
-    function call(address payable _to, uint256 _value, bytes calldata _data) external onlyOwner payable returns (bytes memory) {
-        require(_to != address(0));
-        (bool _success, bytes memory _result) = _to.call{value: _value}(_data);
-        require(_success);
-        return _result;
+    // Helper functions
+    function getEthBalance(address addr) public view returns (uint256 balance) {
+        balance = addr.balance;
+    }
+    function getBlockHash(uint256 blockNumber) public view returns (bytes32 blockHash) {
+        blockHash = blockhash(blockNumber);
+    }
+    function getLastBlockHash() public view returns (bytes32 blockHash) {
+        blockHash = blockhash(block.number - 1);
+    }
+    function getCurrentBlockTimestamp() public view returns (uint256 timestamp) {
+        timestamp = block.timestamp;
+    }
+    function getCurrentBlockDifficulty() public view returns (uint256 difficulty) {
+        difficulty = block.difficulty;
+    }
+    function getCurrentBlockGasLimit() public view returns (uint256 gaslimit) {
+        gaslimit = block.gaslimit;
+    }
+    function getCurrentBlockCoinbase() public view returns (address coinbase) {
+        coinbase = block.coinbase;
     }
 }
