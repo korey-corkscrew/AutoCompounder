@@ -13,3 +13,10 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
+
+
+ENV VARIABLES~~~~~~~~~~
+
+RPC_URL=
+API_KEY=
+PRIVATE_KEY=
