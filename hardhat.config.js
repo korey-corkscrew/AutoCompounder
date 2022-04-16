@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -25,5 +26,10 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
       gasPrice: 90000000000
     },
+  },
+  etherscan: {
+    apiKey: {
+        polygon: "1QQF1PJFXHUGB3TRW2I731YNI2TMVYPMCP",
+    }
   }
 };

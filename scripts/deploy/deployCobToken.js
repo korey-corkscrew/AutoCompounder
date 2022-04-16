@@ -20,7 +20,7 @@ async function main() {
   // We get the contract to deploy
   const CobToken = await ethers.getContractFactory("CobToken");
 
-  const gnosisSafe = addresses.gnosisSafe;
+  const gnosisSafe = addresses.cornTreasury;
 
   const cobToken = await CobToken.deploy(gnosisSafe);
   
@@ -30,6 +30,16 @@ async function main() {
   console.log(`
     Cob Token deployed at ${cob.address}
   `);
+
+  await new Promise(r => setTimeout(r, 70000));
+
+
+  await hre.run("verify:verify", {
+    address: cob.address,
+    constructorArguments: [
+      addresses.cornTreasury
+    ],
+  });
 }
 
 // We recommend this pattern to be able to use async/await everywhere

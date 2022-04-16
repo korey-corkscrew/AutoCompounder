@@ -41,7 +41,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         uint256 amount;         // How many LP tokens the user has provided.
         uint256 rewardDebt;     // Reward debt. See explanation below.
         //
-        // We do some fancy math here. Basically, any point in time, the amount of EGGs
+        // We do some fancy math here. Basically, any point in time, the amount of COBs
         // entitled to a user but is pending to be distributed is:
         //
         //   pending reward = (user.amount * pool.accCobPerShare) - user.rewardDebt
@@ -56,9 +56,9 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     // Info of each pool.
     struct PoolInfo {
         IERC20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. EGGs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that EGGs distribution occurs.
-        uint256 accCobPerShare;   // Accumulated EGGs per share, times 1e12. See below.
+        uint256 allocPoint;       // How many allocation points assigned to this pool. COBs to distribute per block.
+        uint256 lastRewardBlock;  // Last block number that COBs distribution occurs.
+        uint256 accCobPerShare;   // Accumulated COBs per share, times 1e12. See below.
         uint16 depositFeeBP;      // Deposit fee in basis points
     }
 
@@ -149,7 +149,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         return _to.sub(_from).mul(BONUS_MULTIPLIER);
     }
 
-    // View function to see pending EGGs on frontend.
+    // View function to see pending COBs on frontend.
     function pendingCob(uint256 _pid, address _user) external view returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -243,7 +243,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         emit EmergencyWithdraw(msg.sender, _pid, amount);
     }
 
-    // Safe cob transfer function, just in case if rounding error causes pool to not have enough EGGs.
+    // Safe cob transfer function, just in case if rounding error causes pool to not have enough COBs.
     function safeCobTransfer(address _to, uint256 _amount) internal {
         uint256 cobBal = cob.balanceOf(address(this));
         bool transferSuccess = false;

@@ -46,6 +46,16 @@ async function main() {
 
 //renounce ownership of COB token to Masterchef
 
+await new Promise(r => setTimeout(r, 30000));
+
+
+await hre.run("verify:verify", {
+  address: cob.address,
+  constructorArguments: [
+    addresses.cornTreasury
+  ],
+});
+
 
 
 // We recommend this pattern to be able to use async/await everywhere
