@@ -20,8 +20,8 @@ async function main() {
   // manually to make sure everything is compiled
   // constructor args
   
-  const cobAddress = addresses.trueTestCob 
-  const provider = new ethers.providers.JsonRpcProvider("https://rpc-mainnet.maticvigil.com/v1/4b331c188697971af1cd6f05bb7065bc358b7e89");
+  const cobAddress = addresses.CobToken 
+  const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
   const account = new ethers.Wallet(process.env.PRIVATE_KEY);
   const signer = account.connect(provider);
   const devaddress = signer.address;
@@ -42,19 +42,21 @@ async function main() {
   await cobContract.transferOwnership(masterchef.address);
 
   console.log("Transferred ownership of Cob to MasterChief for minting & staking rewards")
+
+  await new Promise(r => setTimeout(r, 30000));
+
+
+  await hre.run("verify:verify", {
+    address: masterchef.address,
+    constructorArguments: [
+      cobAddress, devaddress, feeaddress, cobPerBlock, startblock
+    ],
+  });
 }
 
 //renounce ownership of COB token to Masterchef
 
-await new Promise(r => setTimeout(r, 30000));
 
-
-await hre.run("verify:verify", {
-  address: cob.address,
-  constructorArguments: [
-    addresses.cornTreasury
-  ],
-});
 
 
 

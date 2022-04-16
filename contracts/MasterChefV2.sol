@@ -97,7 +97,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         address _feeAddress,
         uint256 _cobPerBlock,
         uint256 _startBlock
-    ) public {
+    )  {
         cob = _cob;
         devaddr = _devaddr;
         feeAddress = _feeAddress;

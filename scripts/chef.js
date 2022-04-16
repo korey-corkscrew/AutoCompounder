@@ -44,30 +44,42 @@ const fetchPendingReward = async (pid, user) => {
 
 
 const approveToken = async (tokenAddress, spender) => {
+    try {
+        console.log(`appriving ${tokenAddress} to be spent by ${spender}`)
     const signer = await fetchSigner();
     const ERC20Contract = await fetchContract(tokenAddress, ERC20Abi, signer);
-    await ERC20Contract.approve(spender, ethers.constants.MaxUint256);
+    const tx = await ERC20Contract.approve(
+        spender,
+        ethers.constants.MaxUint256,
+        {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000}
+        )
+    const receipt = await tx.wait()
+    return receipt
+    } catch (err) {console.log(err)}
 };//works
 
 // pool stuff
 
 const createPool = async (poolToken) => {
-    const signer = await fetchSigner();
-    const masterchefContract = await fetchContract(addresses.masterChef3, masterchef.abi, signer);
-    console.log(`loaded MasterChef ${masterchefContract.address}
-                Adding Pool for ${poolToken} 
-    `);
-    const allocPoint = ethers.utils.parseUnits("50", "wei");
-    const depositFeeBP = BigNumber.from(10); //FEEBP is 10000
-    const withUpdate = true;
-    const addPool = await masterchefContract.add(
-        allocPoint,
-        poolToken,
-        depositFeeBP,
-        withUpdate,
-        {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000});
-    const receipt = await addPool.wait()
-    return receipt;
+    try {
+        const signer = await fetchSigner();
+        const masterchefContract = await fetchContract(addresses.verifiedMasterChef, masterchef.abi, signer);
+        console.log(`loaded MasterChef ${masterchefContract.address}
+                    Adding Pool for ${poolToken} 
+        `);
+        const allocPoint = ethers.utils.parseUnits("50", "wei");
+        const depositFeeBP = BigNumber.from(10); //FEEBP is 10000
+        const withUpdate = true;
+        const addPool = await masterchefContract.add(
+            allocPoint,
+            poolToken,
+            depositFeeBP,
+            withUpdate,
+            {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000});
+        const receipt = await addPool.wait()
+        return receipt;
+
+    } catch (err) { console.log(err) }
 }; //works
 
 
@@ -78,10 +90,17 @@ const approvePool = async (lptoken) => {
 } //works
 
 const deposit = async (pid, amount) => {
+    try {
     const signer = await fetchSigner();
     const masterchefContract = await fetchContract(addresses.masterChef, masterchef.abi, signer);
-    const depositinpool = await masterchefContract.deposit(pid, amount);
-    return depositinpool;
+    const depositinpool = await masterchefContract.deposit(
+        pid,
+        amount,
+        {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000},
+        );
+    const receipt = await depositinpool.wait()
+    return receipt;
+    } catch (err) {console.log(err)}
 } //works
 
 const withdraw = async (pid, amount) => {
@@ -93,7 +112,7 @@ const withdraw = async (pid, amount) => {
 
 const updatePool = async () => {
     const signer = await fetchSigner();
-    const masterchefContract = await fetchContract(addresses.masterChef3, masterchef.abi, signer);
+    const masterchefContract = await fetchContract(addresses.verifiedMasterChef, masterchef.abi, signer);
     const update = await masterchefContract.massUpdatePools({gasPrice: ethers.utils.parseUnits('66', 'gwei'), gasLimit: 1009000});
     const receipt = await update.wait()
     return receipt
@@ -222,6 +241,16 @@ const checkUserApprovedPool = async (tokendeposit, account, signer, masterchef, 
     }
 }
 
+
+const findPoolId = (_address) => {
+    const pool = POOLS.filter( (pool) => {
+        return pool.tokenStakeAddress.toLowerCase() === _address.toLowerCase() 
+    })
+    console.log(pool.pid)
+    return pool.pid
+}
+
+
 // main loop
 
 const main = async () => {
@@ -230,55 +259,39 @@ const main = async () => {
     // console.log(update)
 
     // 2.)
+        
+        // for (let index = 0; index < POOLS.length; index++) {
+        //     const pool = POOLS[index];
 
+        //     const createMockPool = await createPool(pool.tokenStakeAddress)
+        //     console.log(createMockPool)
+        // }
 
-        // const createMockPool = await createPool(POOLS[0].tokenStakeAddress)
-        // console.log(createMockPool)
-        const createMockPool1 = await createPool(POOLS[1].tokenStakeAddress)
-        console.log(createMockPool1)
-        // const createMockPool2 = await createPool(POOLS[2].tokenStakeAddress)
-        // console.log(createMockPool2)
-        // const createMockPool3 = await createPool(POOLS[3].tokenStakeAddress)
-        // console.log(createMockPool3)
-        // const createMockPool4 = await createPool(POOLS[4].tokenStakeAddress)
-        // console.log(createMockPool4)
-        // const createMockPool5 = await createPool(POOLS[5].tokenStakeAddress)
-        // console.log(createMockPool5)
-        // const createMockPool6 = await createPool(POOLS[6].tokenStakeAddress)
-        // console.log(createMockPool6)
-        // const createMockPool7 = await createPool(POOLS[7].tokenStakeAddress)
-        // console.log(createMockPool7)
-        // const createMockPool8 = await createPool(POOLS[8].tokenStakeAddress)
-        // console.log(createMockPool8)
-        // const createMockPool9 = await createPool(POOLS[9].tokenStakeAddress)
-        // console.log(createMockPool9)
-        // const createMockPool10 = await createPool(POOLS[10].tokenStakeAddress)
-        // console.log(createMockPool10)
-        // const createMockPool11 = await createPool(POOLS[11].tokenStakeAddress)
-        // console.log(createMockPool11)
+        
+       
 
+    // 3. Approval
+        // for (let index = 0; index < POOLS.length; index++) {
+        //     const pool = POOLS[index];
 
+        //     const approval = await approveToken(pool.tokenStakeAddress, addresses.verifiedMasterChef);
+        //     console.log(approval)
+        // }
 
-     
+    // 4. Deposit
+
+    await deposit(2, ethers.utils.parseUnits("0.001", 18))    
     
-    // const approval = await approveToken(addresses.mockLP, addresses.masterChef);
+    //5. ??? Profit
 
-    // const approveNewPool = await approvePool(addresses.CobToken);
-    // const createMockPool2 = await createPool(addresses.realLP2);
-    // const approveNewPool2 = await approvePool(addresses.realLP2);
-    
-    // const amountIn = ethers.utils.parseEther("4.26973");
-    // const depositIn = await deposit(0, amountIn);
-    // console.log('staking done')
-
-
-    // provider.on("block", async () => {
-    //     let pendingreward = await fetchPendingReward(0, signer.address);
-    //     pendingreward = ethers.utils.formatUnits(pendingreward, "ether");
-    //     console.log(`
-    //         Pending Cob Token ${pendingreward}
-    //     `)
-    // })
+    provider.on("block", async () => {
+        const signer = await fetchSigner()
+        let pendingreward = await fetchPendingReward(2, signer.address);
+        pendingreward = ethers.utils.formatUnits(pendingreward, "ether");
+        console.log(`
+            Pending Cob Token ${pendingreward}
+        `)
+    })
    
 
     //const ownercontract = await getOwner();
