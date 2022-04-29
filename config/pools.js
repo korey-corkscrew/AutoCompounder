@@ -99,7 +99,7 @@ const POOLS = [
 },
 {
   pid: 8,
-  tokenStakeAddress: "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7",
+  tokenStakeAddress: "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
   tokenStakeName: "LINK",
   poolurl: "https://info.quickswap.exchange/#/pair/0x5ca6ca6c3709e1e6cfe74a50cf6b2b6ba2dadd67",
   imageurl: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x514910771AF9Ca656af840dff83E8264EcF986CA/logo.png",

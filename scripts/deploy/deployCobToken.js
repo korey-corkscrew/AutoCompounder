@@ -18,11 +18,11 @@ async function main() {
 
 
   // We get the contract to deploy
-  const CobToken = await ethers.getContractFactory("CobToken");
+  const CobToken = await ethers.getContractFactory("BobToken");
 
   const gnosisSafe = addresses.cornTreasury;
 
-  const cobToken = await CobToken.deploy(gnosisSafe);
+  const cobToken = await CobToken.deploy("0xEb0529fF4DE9d8458EDfbE0E52386193A166b335");
   
   const cob = await cobToken.deployed();
 
@@ -31,7 +31,7 @@ async function main() {
     Cob Token deployed at ${cob.address}
   `);
 
-  await new Promise(r => setTimeout(r, 70000));
+  await new Promise(r => setTimeout(r, 20000));
 
 
   await hre.run("verify:verify", {

@@ -63,7 +63,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     }
 
     // The cob TOKEN!
-    CobToken public cob;
+    BobToken public cob;
     // Dev address.
     address public devaddr;
     // cob tokens created per block.
@@ -92,7 +92,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     event UpdateEmissionRate(address indexed user, uint256 goosePerBlock);
 
     constructor(
-        CobToken _cob,
+        BobToken _cob,
         address _devaddr,
         address _feeAddress,
         uint256 _cobPerBlock,

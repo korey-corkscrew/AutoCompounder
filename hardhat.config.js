@@ -29,7 +29,7 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-        polygon: "1QQF1PJFXHUGB3TRW2I731YNI2TMVYPMCP",
+        polygon: process.env.API_KEY,
     }
   }
 };

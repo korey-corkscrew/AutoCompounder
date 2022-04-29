@@ -6,6 +6,7 @@ const axios = require("axios");
 //contract imports
 
 const masterchef = require("../artifacts/contracts/MasterChefV2.sol/MasterChefV2.json")
+const bobToken = require("../artifacts/contracts/CobToken.sol/BobToken.json")
 const {quickRouterAbi, UniswapV2PairAbi, ERC20Abi} = require('./abi.js');
 const { addresses } = require("./addresses");
 const {POOLS} = require("../config/pools.js")
@@ -84,7 +85,7 @@ const createPool = async (poolToken) => {
 
 
 const approvePool = async (lptoken) => {
-    const approvepooltoken = await approveToken(lptoken, addresses.masterChef);
+    const approvepooltoken = await approveToken(lptoken, addresses.verifiedMasterChef);
     return approvepooltoken
 
 } //works
@@ -104,10 +105,21 @@ const deposit = async (pid, amount) => {
 } //works
 
 const withdraw = async (pid, amount) => {
-    const signer = await fetchSigner();
-    const masterchefContract = await fetchContract(addresses.masterChef, masterchef.abi, signer);
-    const withdrawinpool = await masterchefContract.withdraw(pid, amount);
-    return withdrawinpool;
+    try {
+        const signer = await fetchSigner();
+        const masterchefContract = await fetchContract(addresses.masterChef, masterchef.abi, signer);
+        const withdrawinpool = await masterchefContract.withdraw(
+            pid,
+            amount,
+            {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000},
+            );
+        const receipt = await withdrawinpool.wait()
+        return receipt;
+    } catch (err) {
+        console.log("withdraw error")
+        console.log(err)
+    }
+
 } //works
 
 const updatePool = async () => {
@@ -120,7 +132,7 @@ const updatePool = async () => {
 
 const getOwner = async () => {
     const signer = await fetchSigner();
-    const masterchefContract = await fetchContract(addresses.masterChef, masterchef.abi, signer);
+    const masterchefContract = await fetchContract(addresses.verifiedMasterChef, masterchef.abi, signer);
     const ownerAddress = await masterchefContract.owner();
     return ownerAddress
 } //works
@@ -128,7 +140,7 @@ const getOwner = async () => {
 
 const getPoolInfo = async () => {
     const signer = await fetchSigner();
-    const masterchefContract = await fetchContract(addresses.masterChef, masterchef.abi, signer);
+    const masterchefContract = await fetchContract(addresses.verifiedMasterChef, masterchef.abi, signer);
     const pLength = await masterchefContract.poolLength();
 
     const poolInfo = [];
@@ -168,7 +180,7 @@ const mapSymbolToAddress = async (_poolInfo) => {
 const fetchUserPoolData = async () => {
 
     const signer = await fetchSigner();
-    const masterchefContract = await fetchContract(addresses.masterChef, masterchef.abi, signer);
+    const masterchefContract = await fetchContract(addresses.verifiedMasterChef, masterchef.abi, signer);
     const pLength = await masterchefContract.poolLength();
     const accountAddress = await signer.getAddress();
     const poolInfo = await getPoolInfo();
@@ -250,13 +262,26 @@ const findPoolId = (_address) => {
     return pool.pid
 }
 
+const mintMill = async () => {
+    const signer = await fetchSigner()
+    const ctr = await fetchContract("0xBa9BA36175425C024d7986b7C3Af17b7f792e5ac", bobToken.abi, signer)
+    const mint = await ctr.mint(
+        "0xAEFac7De344509cc05fB806898E18C8B8bD0024c",
+        ethers.utils.parseUnits("1000000", 18),
+        {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000}
+    )
+    const receipt = await mint.wait()
+    return receipt
+}
 
 // main loop
 
 const main = async () => {
+
     // 1.)
-    // const update = await updatePool()
-    // console.log(update)
+
+        //    const update = await updatePool()
+        //     console.log(update)
 
     // 2.)
         
@@ -267,8 +292,12 @@ const main = async () => {
         //     console.log(createMockPool)
         // }
 
+    // Re-Update.
+
+        //    const update2 = await updatePool()
+        //     console.log(update)
         
-       
+
 
     // 3. Approval
         // for (let index = 0; index < POOLS.length; index++) {
@@ -279,10 +308,11 @@ const main = async () => {
         // }
 
     // 4. Deposit
-
-    await deposit(2, ethers.utils.parseUnits("0.001", 18))    
+   
+    const tx = await withdraw(2, ethers.utils.parseUnits("0.001", 6)) 
+    console.log(tx)   
     
-    //5. ??? Profit
+    // 5. ??? Profit
 
     provider.on("block", async () => {
         const signer = await fetchSigner()
@@ -293,7 +323,7 @@ const main = async () => {
         `)
     })
    
-
+    
     //const ownercontract = await getOwner();
     //balanceofstaked = ethers.utils.formatUnits(balanceofstaked);
     //balanceofstaked = Number(balanceofstaked);

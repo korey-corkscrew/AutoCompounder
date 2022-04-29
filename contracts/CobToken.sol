@@ -22,12 +22,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 
 
-contract CobToken is ERC20, Ownable {
+contract BobToken is ERC20, Ownable {
 
     uint256 public constant MAXSUPPLY = 42000000 ether;
     uint256 public constant INITIALSUPPLY = 5020800 ether;
     uint256 public constant REWARDSSUPPLY = 36979200 ether;
-    constructor( address gnosisSafe) ERC20("Cob", "COB") {
+    constructor( address gnosisSafe) ERC20("BOB", "HILL") {
         _mint(gnosisSafe, INITIALSUPPLY);
     }
 

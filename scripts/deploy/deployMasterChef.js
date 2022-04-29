@@ -27,7 +27,7 @@ async function main() {
   const devaddress = signer.address;
   const feeaddress = addresses.cornTreasury;
   const cobPerBlock = ethers.utils.parseUnits("2.24", "ether");
-  const startblock = BigNumber.from(20285829);
+  const startblock = BigNumber.from(27763717);
 
 
   // We get the contract to deploy
@@ -39,7 +39,10 @@ async function main() {
   console.log("Master Chief 117 deployed to:", masterchef.address);
   const CobToken = await ethers.getContractFactory("CobToken");
   const cobContract = CobToken.attach(cobAddress);
-  await cobContract.transferOwnership(masterchef.address);
+  await cobContract.transferOwnership(
+    masterchef.address,
+    {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000},
+    );
 
   console.log("Transferred ownership of Cob to MasterChief for minting & staking rewards")
 
