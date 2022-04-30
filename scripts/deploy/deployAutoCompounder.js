@@ -18,18 +18,14 @@ async function main() {
 
 
   // We get the contract to deploy
-  const CobToken = await ethers.getContractFactory("BobToken");
+  const AutoCompounder = await ethers.getContractFactory("AutoCompounder");
+  const autoCompounder = AutoCompounder.attach("0xeE4Aa63A0fD6853A460B9b56EbEd74930DFf763c");
+  // await autoCompounder.createAutoCompounder();
+  await autoCompounder.deposit(0, ethers.utils.parseUnits('100', "ether"));
 
-  const gnosisSafe = addresses.cornTreasury;
-
-  const cobToken = await CobToken.deploy(gnosisSafe);
+  // const autoCompounder = await AutoCompounder.deploy();
   
-  const cob = await cobToken.deployed();
-
-
-  console.log(`
-    Test Cob Token deployed at ${cob.address}
-  `);
+  // await autoCompounder.deployed();
 }
 
 

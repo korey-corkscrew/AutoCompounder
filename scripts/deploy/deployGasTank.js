@@ -18,18 +18,12 @@ async function main() {
 
 
   // We get the contract to deploy
-  const CobToken = await ethers.getContractFactory("BobToken");
+  const GasTank = await ethers.getContractFactory("GasTank");
 
-  const gnosisSafe = addresses.cornTreasury;
-
-  const cobToken = await CobToken.deploy(gnosisSafe);
+  const gasTank = await GasTank.deploy();
   
-  const cob = await cobToken.deployed();
-
-
-  console.log(`
-    Test Cob Token deployed at ${cob.address}
-  `);
+  await gasTank.deployed();
+  console.log("bobby")
 }
 
 

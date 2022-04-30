@@ -22,7 +22,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./CobToken.sol";
+import "./BobToken.sol";
 
 
 // MasterChef is the master of cob. He can make cob and he is a fair guy.
@@ -145,7 +145,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     }
 
     // Return reward multiplier over the given _from to _to block.
-    function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {
+    function getMultiplier(uint256 _from, uint256 _to) public pure returns (uint256) {
         return _to.sub(_from).mul(BONUS_MULTIPLIER);
     }
 

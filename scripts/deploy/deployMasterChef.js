@@ -27,34 +27,39 @@ async function main() {
   const devaddress = signer.address;
   const feeaddress = addresses.cornTreasury;
   const cobPerBlock = ethers.utils.parseUnits("2.24", "ether");
-  const startblock = BigNumber.from(27763717);
+  const startblock = BigNumber.from(27745197);
 
 
   // We get the contract to deploy
   const MasterChefV2 = await ethers.getContractFactory("MasterChefV2");
-  const masterchef = await MasterChefV2.deploy(cobAddress, devaddress, feeaddress, cobPerBlock, startblock);
+  const masterchef = MasterChefV2.attach("0x6F78679615D0dd9a87070b37e7F2f49Ee0E1FA98");
+  // const masterchef = await MasterChefV2.deploy(cobAddress, devaddress, feeaddress, cobPerBlock, startblock);
+  // await masterchef.add(50, "0xfd7378e0Ebe9d2636317C4B9F472C3DF83b12917", 10, false);
+  // await masterchef.deposit
 
-  await masterchef.deployed();
+  // await masterchef.deployed();
 
-  console.log("Master Chief 117 deployed to:", masterchef.address);
-  const CobToken = await ethers.getContractFactory("CobToken");
-  const cobContract = CobToken.attach(cobAddress);
-  await cobContract.transferOwnership(
-    masterchef.address,
-    {gasPrice: ethers.utils.parseUnits('97', 'gwei'), gasLimit: 10009000},
-    );
+  // console.log("Master Chief 117 deployed to:", masterchef.address);
+  const CobToken = await ethers.getContractFactory("BobToken");
+  const cobContract = CobToken.attach("0xfd7378e0Ebe9d2636317C4B9F472C3DF83b12917");
+  // await cobContract.approve("0xe6dE688A249C82339015E1A7020df325a077341c", ethers.utils.parseUnits('100000', "ether"))
+  // await cobContract.mint("0x43b02cdF22d0DE535279507CF597969Ce82198Af", ethers.utils.parseUnits('100000', "ether"))
+  // await cobContract.transferOwnership(
+  //   masterchef.address,
+  //   // {gasPrice: ethers.utils.parseUnits('60', 'gwei'), gasLimit: 10009000},
+  //   );
 
-  console.log("Transferred ownership of Cob to MasterChief for minting & staking rewards")
+  // console.log("Transferred ownership of Cob to MasterChief for minting & staking rewards")
 
-  await new Promise(r => setTimeout(r, 30000));
+  // await new Promise(r => setTimeout(r, 30000));
 
 
-  await hre.run("verify:verify", {
-    address: masterchef.address,
-    constructorArguments: [
-      cobAddress, devaddress, feeaddress, cobPerBlock, startblock
-    ],
-  });
+  // await hre.run("verify:verify", {
+  //   address: masterchef.address,
+  //   constructorArguments: [
+  //     cobAddress, devaddress, feeaddress, cobPerBlock, startblock
+  //   ],
+  // });
 }
 
 //renounce ownership of COB token to Masterchef
