@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IMasterChefV2.sol";
 
-contract Compounder is Ownable {
+contract Compounder is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -36,7 +36,7 @@ contract Compounder is Ownable {
 
     // --------------------------------------------------------------------------------
 
-    function deposit(uint256 _pid, uint256 _amount) external onlyOwner {
+    function deposit(uint256 _pid, uint256 _amount) external onlyOwner nonReentrant {
         // Get pool token
         (IERC20 token, , , , ) = mc.poolInfo(_pid);
 
@@ -55,7 +55,7 @@ contract Compounder is Ownable {
 
     // --------------------------------------------------------------------------------
 
-    function withdraw(uint256 _pid, uint256 _amount) external onlyOwner {
+    function withdraw(uint256 _pid, uint256 _amount) external onlyOwner nonReentrant {
         // Get pool token
         (IERC20 token, , , , ) = mc.poolInfo(_pid);
 
@@ -70,7 +70,7 @@ contract Compounder is Ownable {
 
     // --------------------------------------------------------------------------------
 
-    function withdrawAllReward(uint256[] memory _pids) external onlyOwner {
+    function withdrawAllReward(uint256[] memory _pids) external onlyOwner nonReentrant {
         (uint256 stakedAmt, ) = mc.userInfo(rewardPool, address(this));
         _claimPoolsRewards(_pids);
         mc.withdraw(rewardPool, stakedAmt);
@@ -79,15 +79,17 @@ contract Compounder is Ownable {
 
     // --------------------------------------------------------------------------------
 
-    function compound(uint256[] memory _pids) external onlyOwner {
+    function compound(uint256[] memory _pids) external onlyOwner nonReentrant {
         _claimPoolsRewards(_pids);
         _compoundReward();
     }
 
     // --------------------------------------------------------------------------------
 
-    function emergencyTokenWithdraw(IERC20 _token) external onlyOwner {
-        _token.transfer(creator, _token.balanceOf(address(this)));
+    function emergencyTokenWithdraw(IERC20 _token) external onlyOwner nonReentrant returns (uint256) {
+        uint256 balance = _token.balanceOf(address(this));
+        _token.transfer(creator, balance);
+        return balance;
     }
 
     // --------------------------------------------------------------------------------

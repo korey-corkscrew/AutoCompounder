@@ -33,7 +33,7 @@ async function main() {
 
   const BobToken = await ethers.getContractFactory("BobToken");
   // const bobToken = await BobToken.deploy(signer.address);
-  const bob = BobToken.attach("0xE5AB747c4BF94BDa6a80400f96C6cBB096607651");
+  const bob = BobToken.attach("0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619");
   // const bob = await bobToken.deployed();
   // console.log(`
   //   Test token depoloyed at ${bob.address}
@@ -63,10 +63,10 @@ async function main() {
 
   // // ------------------------------------------------------------
 
-  const rewardPool = 0;
+  const rewardPool = 15;
   const AutoCompounder = await ethers.getContractFactory("AutoCompounder");
-  // const autoCompounder = await AutoCompounder.deploy(gt.address, mc.address, rewardPool, bob.address);
-  const ac = AutoCompounder.attach("0x7F47C4684Fc73F0427b1f497e244cb693CaF5eA6");
+  // const autoCompounder = await AutoCompounder.deploy(gt.address, "0xb4b14aa0dfa22cb3549de81e2657c6c026014090", rewardPool, "0x648FA1E7Dd2722Ba93EC4Da99f2C32347522a37C");
+  const ac = AutoCompounder.attach("0x5345d9C49992BfaA6E60E7185FBf241a38C3A7C4");
   // const ac = await autoCompounder.deployed();
   // console.log(`
   //   Auto Compounder depoloyed at ${ac.address}
@@ -79,12 +79,12 @@ async function main() {
 
   const compounder = await ac.compounders(signer.address);
 
-  // await ac.startAutoCompound(300);
-  // console.log(`
-  //   Auto compounder started
-  // `);
+  await ac.startAutoCompound(3600);
+  console.log(`
+    Auto compounder started
+  `);
 
-  await ac.stopAutoCompound();
+  // await ac.stopAutoCompound();
 
   // await gt.depositGas(signer.address, {'value': ethers.utils.parseUnits('0.5', "ether")});
   // console.log(`
@@ -101,9 +101,11 @@ async function main() {
   //   Token ${bob.address} approved for trade on ${compounder}
   // `);
 
-  // await ac.deposit(0, ethers.utils.parseUnits('100', "ether"));
+  // await ac.deposit(11, ethers.utils.parseUnits('0.0003', 18));
   // console.log(`
   //   Auto compound desposit
+  //   ${await bob.balanceOf(signer.address)}
+  //   ${ethers.utils.parseUnits('0.00003', 18)}
   // `);
 }
 

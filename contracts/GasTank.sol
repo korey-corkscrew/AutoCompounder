@@ -1,5 +1,21 @@
 // SPDX-License-Identifier: MIT
 
+//                                                 ______   __                                                   
+//                                                /      \ /  |                                                  
+//   _______   ______    ______   _______        /$$$$$$  |$$/  _______    ______   _______    _______   ______  
+//  /       | /      \  /      \ /       \       $$ |_ $$/ /  |/       \  /      \ /       \  /       | /      \ 
+// /$$$$$$$/ /$$$$$$  |/$$$$$$  |$$$$$$$  |      $$   |    $$ |$$$$$$$  | $$$$$$  |$$$$$$$  |/$$$$$$$/ /$$$$$$  |
+// $$ |      $$ |  $$ |$$ |  $$/ $$ |  $$ |      $$$$/     $$ |$$ |  $$ | /    $$ |$$ |  $$ |$$ |      $$    $$ |
+// $$ \_____ $$ \__$$ |$$ |      $$ |  $$ |      $$ |      $$ |$$ |  $$ |/$$$$$$$ |$$ |  $$ |$$ \_____ $$$$$$$$/ 
+// $$       |$$    $$/ $$ |      $$ |  $$ |      $$ |      $$ |$$ |  $$ |$$    $$ |$$ |  $$ |$$       |$$       |
+//  $$$$$$$/  $$$$$$/  $$/       $$/   $$/       $$/       $$/ $$/   $$/  $$$$$$$/ $$/   $$/  $$$$$$$/  $$$$$$$/
+//                         .-.
+//         .-""`""-.    |(@ @)
+//      _/`oOoOoOoOo`\_ \ \-/
+//     '.-=-=-=-=-=-=-.' \/ \
+//       `-=.=-.-=.=-'    \ /\
+//          ^  ^  ^       _H_ \
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -8,9 +24,24 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-
+/**
+* @title Corn Finance Gas Tank
+* @author C.W.B.
+* @notice Users need to deposit native tokens into this contract in order to use 
+* automated Corn Finance contracts. A user will interact with the Gas Tank by 
+* depositing and withdrawing native tokens. When approved automated contract tasks 
+* are executed, the transaction executor is paid from the user deposited funds in the 
+* Gas Tank.
+*
+* NOTE: Automated tasks are only executed when the task creator has sufficient native 
+* token desposited in the Gas Tank. INSUFFICIENT FUNDS WILL RESULT IN TASK EXECUTION 
+* FAILURE.
+*
+* A 0.001 MATIC fee is applied to all executed tasks.
+*/
 contract GasTank is Ownable, ReentrancyGuard, Pausable {
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
     // Amount of gas a user has deposited
     mapping(address => uint256) public userGasAmounts;
@@ -18,17 +49,28 @@ contract GasTank is Ownable, ReentrancyGuard, Pausable {
     address[] public approvedPayees;
     mapping(address => bool) public _approvedPayees;
 
+    uint256 public constant txFee = 1e15; // 0.001 MATIC
+    address payable public constant feeAddress = payable(0x93F835b9a2eec7D2E289c1E0D50Ad4dEd88b253f);
 
+    // --------------------------------------------------------------------------------
+    // //////////////////////////////////// Events ////////////////////////////////////
+    // --------------------------------------------------------------------------------
     event DepositGas(address indexed user, uint256 amount);
     event WithdrawGas(address indexed user, uint256 amount);
     event Pay(address indexed payer, address indexed payee, uint256 amount);
 
 
+    // --------------------------------------------------------------------------------
+    // ////////////////////////////////// Modifiers ///////////////////////////////////
+    // --------------------------------------------------------------------------------
     modifier onlyApprovedPayee() {
         require(_approvedPayees[msg.sender], "CornFi Gas Tank: Unapproved payee");
         _;
     }
 
+
+    // --------------------------------------------------------------------------------
+    // /////////////////////////// State Changing Functions ///////////////////////////
     // --------------------------------------------------------------------------------
 
     function addPayee(address _payee) external onlyOwner {
@@ -92,17 +134,36 @@ contract GasTank is Ownable, ReentrancyGuard, Pausable {
 
     // --------------------------------------------------------------------------------
 
-    function pay(address _payer, address _payee, uint256 _amount) external onlyApprovedPayee whenNotPaused nonReentrant {
-        require(userGasAmounts[_payer] >= _amount, "CornFi Gas Tank: Insufficient User Funds");
-        
-        userGasAmounts[_payer] = userGasAmounts[_payer].sub(_amount);
+    /**
+    * @dev
+    * @param _payer 
+    */
+    function pay(
+        address _payer, 
+        address _payee, 
+        uint256 _amount
+    ) external onlyApprovedPayee whenNotPaused nonReentrant {
+        uint256 amount = _amount.add(txFee);
 
-        // Transfer ETH balance to the user
+        require(userGasAmounts[_payer] >= amount, "CornFi Gas Tank: Insufficient User Funds");
+        
+        userGasAmounts[_payer] = userGasAmounts[_payer].sub(amount);
+
+        // Transfer ETH
         (bool success, ) = _payee.call{value: _amount}("");
+        (bool success1, ) = feeAddress.call{value: txFee}("");
 
         // Revert if the transfer fails
-        require(success, "CornFi Gas Tank: ETH transfer failed");
+        require(success && success1, "CornFi Gas Tank: ETH transfer failed");
 
         emit Pay(_payer, _payee, _amount);
+    }
+
+    // --------------------------------------------------------------------------------
+
+    // Claim ERC20 tokens accidently sent to this contract. All user funds are the native
+    // token. This function cannot withdraw native tokens, only ERC20 tokens.
+    function emergencyWithdraw(IERC20 _token, uint256 _amount) external onlyOwner {
+        _token.safeTransfer(owner(), _amount);
     }
 }

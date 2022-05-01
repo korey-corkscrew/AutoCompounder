@@ -14,5 +14,5 @@ interface ICompounder {
     function withdraw(uint256 _pid, uint256 _amount) external;
     function withdrawAllReward(uint256[] memory _pids) external;
     function compound(uint256[] memory _pids) external;
-    function emergencyTokenWithdraw(IERC20 _token) external;
+    function emergencyTokenWithdraw(IERC20 _token) external returns (uint256);
 }

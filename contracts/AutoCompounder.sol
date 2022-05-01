@@ -11,7 +11,7 @@ import "./Compounder.sol";
 import "./interfaces/IPokeMe.sol";
 import "./interfaces/IGasTank.sol";
 
-contract AutoCompounder is Ownable {
+contract AutoCompounder is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -29,10 +29,10 @@ contract AutoCompounder is Ownable {
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     IPokeMe public constant gelato = IPokeMe(0x527a819db1eb0e34426297b03bae11F2f8B3A19E);
     
-    IGasTank public immutable gasTank;// = IGasTank(0x8090e4C077E0372B38E5Eed5e71FA8a2F79171bB);
-    IMasterChefV2 public immutable masterChef;// = IMasterChefV2(0x6F78679615D0dd9a87070b37e7F2f49Ee0E1FA98);
-    uint256 public immutable rewardPoolId;// = 0;
-    IERC20 public immutable rewardToken;// = IERC20(0xfd7378e0Ebe9d2636317C4B9F472C3DF83b12917);
+    IGasTank public immutable gasTank;
+    IMasterChefV2 public immutable masterChef;
+    uint256 public immutable rewardPoolId;
+    IERC20 public immutable rewardToken;
 
 
     modifier hasCompounder() {
@@ -77,7 +77,10 @@ contract AutoCompounder is Ownable {
 
     function checker(address _user) external view returns (bool, bytes memory) {
         uint256[] memory pids = pendingRewardPools(_user);
-        if(pids.length == 0) {
+        if(
+            pids.length == 0 || 
+            block.timestamp < compoundInfo[_user].lastCompound.add(compoundInfo[_user].interval)
+        ) {
             bytes memory b;
             return (false, b);
         }
@@ -129,7 +132,7 @@ contract AutoCompounder is Ownable {
     // --------------------------------------------------------------------------------
 
     // Gelato is caller
-    function compoundGelato(address _user, uint256[] memory _pids) external {
+    function compoundGelato(address _user, uint256[] memory _pids) external nonReentrant {
         require(msg.sender == address(gelato), "CornFi Auto Compounder: Caller not Gelato");
         require(address(compounders[_user]) != address(0), "CornFi Auto Compounder: User not created");
         require(
@@ -151,5 +154,11 @@ contract AutoCompounder is Ownable {
         require(address(compounders[msg.sender]) == address(0), "CornFi Auto Compounder: User already created");
         compounders[msg.sender] = new Compounder(masterChef, rewardPoolId, rewardToken, msg.sender);
         return(address(compounders[msg.sender]));
+    }
+
+    // --------------------------------------------------------------------------------
+
+    function emergencyTokenWithdraw(IERC20 _token) external returns (uint256) {
+        return compounders[msg.sender].emergencyTokenWithdraw(_token);
     }
 }
